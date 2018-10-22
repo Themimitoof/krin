@@ -1,0 +1,25 @@
+{
+  "name": "krin",
+  "version": "0.1.0",
+  "description": "Share instantaneously files and pictures",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/themimitoof/krin.git"
+  },
+  "author": "Michael Vieira <dev[at]mvieira[d.t]fr> (Themimitoof)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/themimitoof/krin/issues"
+  },
+  "homepage": "https://github.com/themimitoof/krin#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "sequelize": "^4.41.0",
+    "sqlite": "^3.0.0"
+  }
+}

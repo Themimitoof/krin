@@ -1,0 +1,9 @@
+node_modules/
+!files/.keep
+
+*.db
+*.sqlite
+*.sqlite3
+*.log
+config/*.js
+config/*.json
