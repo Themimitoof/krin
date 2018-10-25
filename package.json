@@ -17,8 +17,8 @@
   },
   "homepage": "https://github.com/themimitoof/krin#readme",
   "dependencies": {
-    "body-parser": "^1.18.3",
-    "express": "^4.16.4",
+    "node-schedule": "^1.3.0",
+    "path-to-regexp": "^2.4.0",
     "sequelize": "^4.41.0",
     "sqlite": "^3.0.0"
   }
