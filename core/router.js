@@ -82,7 +82,7 @@ function router(req, res) {
                     return return_message(req, res, HTTP_CODE.UNP_ENTITY, RETURN_MESSAGES.UPLOAD_EMPTY);
 
                 // Write the file
-                fs.writeFile(`./files/${req.user.uuid}-${filename}`, req.body, err => {
+                fs.writeFile(__dirname + `/../files/${req.user.uuid}-${filename}`, req.body, err => {
                     if(err) {
                         console.error('Unable to store the file for ' + req.user.uuid +'. Cause: \n', err.message);
                         return return_message(req, res, HTTP_CODE.INTERROR, RETURN_MESSAGES.INT_ERROR);
@@ -93,7 +93,7 @@ function router(req, res) {
                         file: filename,
                         owner: req.user.uuid
                     })
-                    .then(() => return_message(req, res, HTTP_CODE.OK, global.BASE_URL + filename))
+                    .then(() => return_message(req, res, HTTP_CODE.OK, global.BASE_URL + 'files/' + filename))
                     .catch(dbErr => {
                         console.error('[!Orphan file created!] Unable to store the file in database for ' + req.user.uuid +'. Cause: \n', dbErr.message);
                         return_message(req, res, HTTP_CODE.INTERROR, RETURN_MESSAGES.INT_ERROR)
@@ -105,19 +105,38 @@ function router(req, res) {
 
     // Retrieve requested file
     else if(req.method == "GET" && pathRegexp('/files/:filename').exec(req.url)) {
-        res.writeHead(HTTP_CODE.OK, { 'Content-Type': 'application/json' });
-        res.write(JSON.stringify({
-            code: HTTP_CODE.OK,
-            message: "hello"
-        }));
+        var filename = pathRegexp('/files/:filename').exec(req.url)[1];
+        
+        // Check if the file exists in database
+        db.models.files.findOne({
+            where: { file: filename },
+            raw: true
+        }).then(data => {
+            if(data == null)
+                return return_message(req, res, HTTP_CODE.NOTFOUND, RETURN_MESSAGES.NOT_FOUND);
 
-        res.end();
+            fs.readFile(__dirname + `/../files/${data.owner}-${filename}`, (err, file) => {
+                if(err)
+                    return return_message(req, res, HTTP_CODE.NOTFOUND, RETURN_MESSAGES.NOT_FOUND);
+
+                res.writeHead(HTTP_CODE.OK);
+                res.end(file);
+            });
+        }).catch(() => return_message(req, res, HTTP_CODE.NOTFOUND, RETURN_MESSAGES.NOT_FOUND));
     }
 
 
     // Delete requested file
-    else if(req.method == "DELETE" && pathRegexp('/files/:uuid').exec(req.url)) {
+    else if(req.method == "DELETE" && pathRegexp('/files/:filename').exec(req.url)) {
+        var filename = pathRegexp('/files/:filename').exec(req.url)[1];
+
         validate_authentication(req, res, () => {
+            db.models.files.destroy({ file: filename }).then((err, ret) => {
+                console.log({err: err, return: ret });
+            }).catch(err => {
+                console.log(err);
+            });
+            
             res.writeHead(HTTP_CODE.OK, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify({
                 code: HTTP_CODE.OK,

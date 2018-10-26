@@ -8,6 +8,9 @@
 // Import dependencies
 const fs = require('fs');
 
+/**
+ * Parse the config file and permit to access to the entire config file or to a specific key
+ */
 function settings() {
     try {
         var file = fs.readFileSync(__dirname + '/../config/krin.json');
