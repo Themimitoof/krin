@@ -3,6 +3,7 @@ files/
 !files/.keep
 
 *.db
+*.db-journal
 *.sqlite
 *.sqlite3
 *.log
