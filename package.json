@@ -22,5 +22,8 @@
     "path-to-regexp": "^2.4.0",
     "sequelize": "^4.41.0",
     "sqlite": "^3.0.0"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^5.2.0"
   }
 }
