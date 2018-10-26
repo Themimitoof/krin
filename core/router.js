@@ -34,7 +34,8 @@ const RETURN_MESSAGES = {
     TOO_LARGE: 'The file exceed the maximum size allowed.',
     NO_VALID_API_KEY: 'A valid API key is needed to use this endpoint.',
     BLOCKED_ACCOUNT: 'Your account is currently blocked.',
-    UPLOAD_EMPTY: 'The uploaded ressource is empty.'
+    UPLOAD_EMPTY: 'The uploaded ressource is empty.',
+    DELETED: 'File deleted.'
 }
 
 
@@ -122,7 +123,7 @@ function router(req, res) {
                 res.writeHead(HTTP_CODE.OK);
                 res.end(file);
             });
-        }).catch(() => return_message(req, res, HTTP_CODE.NOTFOUND, RETURN_MESSAGES.NOT_FOUND));
+        }).catch(() => return_message(req, res, HTTP_CODE.INTERROR, RETURN_MESSAGES.INT_ERROR));
     }
 
 
@@ -131,19 +132,23 @@ function router(req, res) {
         var filename = pathRegexp('/files/:filename').exec(req.url)[1];
 
         validate_authentication(req, res, () => {
-            db.models.files.destroy({ file: filename }).then((err, ret) => {
-                console.log({err: err, return: ret });
-            }).catch(err => {
-                console.log(err);
-            });
-            
-            res.writeHead(HTTP_CODE.OK, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify({
-                code: HTTP_CODE.OK,
-                message: "hello"
-            }));
+            db.models.files.findOne({
+                where: { file: filename }
+            }).then(model => {
+                var infos = (model != null) ? model.dataValues : null;
 
-            res.end();
+                if(model != null) model.destroy();
+                return infos;
+            }).then(infos => {
+                if(infos) {
+                    fs.unlink(__dirname + `/../files/${infos.owner}-${filename}`, err => {
+                        if(err)
+                            console.error(`[!Possible orphan file created!] Unable to delete the file in filesystem ${infos.owner}-${filename}. Cause: \n`, err.message);
+
+                        return_message(req, res, HTTP_CODE.OK, RETURN_MESSAGES.DELETED);
+                    });
+                } else return_message(req, res, HTTP_CODE.NOTFOUND, RETURN_MESSAGES.NOT_FOUND);
+            }).catch((err) => return_message(req, res, HTTP_CODE.INTERROR, RETURN_MESSAGES.INT_ERROR));
         });
     }
 
@@ -173,7 +178,7 @@ function validate_authentication(req, res, next) {
                 req.user = val;
                 next();
             }
-        }).catch(() => return_message(req, res, HTTP_CODE.UNAUTHORIZED, RETURN_MESSAGES.NO_VALID_API_KEY));
+        }).catch(() => return_message(req, res, HTTP_CODE.INTERROR, RETURN_MESSAGES.INT_ERROR));
     } else return_message(req, res, HTTP_CODE.UNAUTHORIZED, RETURN_MESSAGES.NO_VALID_API_KEY);
 };
 
