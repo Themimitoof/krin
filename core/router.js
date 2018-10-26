@@ -46,10 +46,21 @@ function router(req, res) {
     if(req.method == "GET" && req.url === '/files') {
         validate_authentication(req, res, () => {
             db.models.files.findAll({
-                where: { owner: req.user.uuid },
+                where: { 
+                    owner: req.user.uuid,
+                    expireAt: {
+                        [db.Op.or]: {
+                            [db.Op.eq]: null,
+                            [db.Op.lg]: new Date()
+                        }
+                    }
+                },
                 raw: true
             }).then(data => {
-                res.writeHead(HTTP_CODE.OK, { 'Content-Type': 'application/json' });
+                res.writeHead(HTTP_CODE.OK, { 
+                    'Content-Type': 'application/json',
+                    'X-Count': data.length
+                });
                 res.end(JSON.stringify(data));
             }).catch(() => return_message(req, res, HTTP_CODE.INTERROR, RETURN_MESSAGES.INT_ERROR));
         });
@@ -83,7 +94,7 @@ function router(req, res) {
                     return return_message(req, res, HTTP_CODE.UNP_ENTITY, RETURN_MESSAGES.UPLOAD_EMPTY);
 
                 // Write the file
-                fs.writeFile(__dirname + `/../files/${req.user.uuid}-${filename}`, req.body, err => {
+                fs.writeFile(__dirname + `/../files/${req.user.uuid}.${filename}`, req.body, err => {
                     if(err) {
                         console.error('Unable to store the file for ' + req.user.uuid +'. Cause: \n', err.message);
                         return return_message(req, res, HTTP_CODE.INTERROR, RETURN_MESSAGES.INT_ERROR);
@@ -110,13 +121,21 @@ function router(req, res) {
         
         // Check if the file exists in database
         db.models.files.findOne({
-            where: { file: filename },
+            where: { 
+                file: filename,
+                expireAt: {
+                    [db.Op.or]: {
+                        [db.Op.eq]: null,
+                        [db.Op.lg]: new Date()
+                    }
+                }
+            },
             raw: true
         }).then(data => {
             if(data == null)
                 return return_message(req, res, HTTP_CODE.NOTFOUND, RETURN_MESSAGES.NOT_FOUND);
 
-            fs.readFile(__dirname + `/../files/${data.owner}-${filename}`, (err, file) => {
+            fs.readFile(__dirname + `/../files/${data.owner}.${filename}`, (err, file) => {
                 if(err)
                     return return_message(req, res, HTTP_CODE.NOTFOUND, RETURN_MESSAGES.NOT_FOUND);
 
@@ -141,9 +160,9 @@ function router(req, res) {
                 return infos;
             }).then(infos => {
                 if(infos) {
-                    fs.unlink(__dirname + `/../files/${infos.owner}-${filename}`, err => {
+                    fs.unlink(__dirname + `/../files/${infos.owner}.${filename}`, err => {
                         if(err)
-                            console.error(`[!Possible orphan file created!] Unable to delete the file in filesystem ${infos.owner}-${filename}. Cause: \n`, err.message);
+                            console.error(`[!Possible orphan file created!] Unable to delete the file in filesystem ${infos.owner}.${filename}. Cause: \n`, err.message);
 
                         return_message(req, res, HTTP_CODE.OK, RETURN_MESSAGES.DELETED);
                     });
