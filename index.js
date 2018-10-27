@@ -33,6 +33,9 @@ exec('node_modules/.bin/sequelize db:migrate', (err, out) => {
     out.splice(0, 5);
     console.info(out.toString());
 
+    // Import tasks
+    require('./core/tasks');
+
     // Create the server
     server.createServer(router).listen(HTTP_PORT, HTTP_BIND, () => {
         console.info(`Krin server is listening in http://${HTTP_BIND}:${HTTP_PORT}/.`);
