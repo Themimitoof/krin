@@ -1,6 +1,9 @@
+.vscode/
+.idea/
 node_modules/
 files/
 !files/.keep
+.DS_Store
 
 *.db
 *.db-journal

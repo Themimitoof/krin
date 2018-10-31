@@ -213,7 +213,7 @@ function return_message(req, res, http_code, message) {
     if(req.headers["content-type"] == 'application/json') {
         res.writeHead(http_code, { 'Content-Type': 'application/json' });
         message = JSON.stringify({ code: http_code, message: message });
-    } else res.writeHead(http_code);
+    } else res.writeHead(http_code, { 'Content-Type': 'text/plain' });
 
     res.end(message, () => req.connection.destroy());
 }
