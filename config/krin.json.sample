@@ -1,5 +1,6 @@
 {
     "bind_host": "0.0.0.0",
     "bind_port": 8095,
-    "base_url": "http://krin.dev/"
+    "base_url": "http://krin.dev/",
+    "max_upload": "20000"
 }

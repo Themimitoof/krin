@@ -113,5 +113,5 @@ Today, Krin uses _[file-type](https://www.npmjs.com/package/file-type) module_ t
 Feel free to contribute to the project by creating issues or merge request for implementing new features or patch bug.
 
 
-## License
+## License
 Krin is released with [MIT License](LICENSE).

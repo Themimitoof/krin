@@ -10,10 +10,10 @@ const pathRegexp = require('path-to-regexp'),
       fileType   = require('file-type'),
       fs         = require('fs'),
       crypto     = require('crypto'),
-      db         = require('../db/models').sequelize;
+      db         = require('../db/models').sequelize,
+      config     = require('./settings');
 
-var config = {};
-config.max_size = "400000000";
+const max_upload = config.get('max_upload') * 1000;
 
 // Define some constants
 const HTTP_CODE = {
@@ -77,7 +77,7 @@ function router(req, res) {
                 req.body.push(chunk);
                 req.payload_size += chunk.length;
 
-                if(req.payload_size > config.max_size)
+                if(req.payload_size > max_upload)
                     return_message(req, res, HTTP_CODE.TOOLARGE, RETURN_MESSAGES.TOO_LARGE);
             });
 
