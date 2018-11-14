@@ -17,6 +17,8 @@ const conf    = require('./core/settings'),
 const HTTP_BIND = process.env.HTTP_BIND || conf.get('bind_host') || 'localhost';
 const HTTP_PORT = process.env.HTTP_PORT || conf.get('bind_port') || 8095;
 global.BASE_URL = conf.get('base_url');
+global.MAX_UPLOAD = process.env.MAX_UPLOAD || conf.get('max_upload') || 20000;
+global.MAX_UPLOAD *= 1000;
 
 console.info(`Running Krin in ${env} mode`);
 

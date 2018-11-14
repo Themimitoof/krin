@@ -13,10 +13,11 @@ if(env == 'production')
   config.logging = false;
 
 let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+if (typeof config != 'undefined') {
+  sequelize = new Sequelize(config);
 } else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
+  console.error('Requested environment not exist in database.json file.');
+  process.exit(1);
 }
 
 fs
