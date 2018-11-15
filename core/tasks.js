@@ -56,7 +56,61 @@ function clean_expired() {
  * Remove all orphans files from database and filesystem.
  */
 function clean_orphans() {
+    const task  = 'clean_orphans', 
+          timer = Date.now();
 
+    // Get all expired medias
+    db.models.files.findAll({ where: {} }).then(data => {
+        if(data == null) {
+            console.log('No files found in database. Nothing to do.');
+            return return_exectime(task, timer);
+        }
+
+        console.log('Delete orphans files in database.');
+        for(i = 0; i <= data.length; i++) {
+            if(!fs.existsSync(__dirname + `/../files/${data[i].owner}.${data[i].file}`)) {
+                const file_uuid = data[i].uuid;
+
+                data[i].destroy();
+                console.log(`${file_uuid} entry deleted.`);
+            }
+        }
+
+        console.log('Delete orphans files in filesystem.');
+        fs.readdir(__dirname + '/../files/', (err, files) => {
+            if(err) {
+                console.log('An error is occured on opening the folder. Cause: \n' + err);
+                return return_exectime(task, timer);
+            }
+
+            for(i = 0; i <= files.length; i++) {
+                var file_found = false, x = 0;
+
+                for(x = 0; x <= data.length; x++) {
+                    if(data[x].file == files[i]) {
+                        file_found = true;
+                        break;
+                    }
+                }
+
+                if(!file_found) {
+                    var filename = files[i];
+
+                    if(!fs.unlinkSync(__dirname + `/../files/${filename}`))
+                        console.log(`${filename} deleted.`);
+                    else
+                        console.warn(`Unable to delete ${filename}!`);
+                }
+            }
+
+            return return_exectime(task, timer);
+        });
+    }).catch(err => {
+        console.error('An error happened during the execution of the task. Cause:\n' + err);
+        return return_exectime(task, timer);   
+    });
+
+    console.info(`${task} task started at ${new Date}`);
 }
 
 
