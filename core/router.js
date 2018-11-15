@@ -198,8 +198,7 @@ function validate_authentication(req, res, next) {
 
     if(typeof api_key !== 'undefined' && api_key.length == 64) {
         db.models.users.findOne({
-            api_key,
-            where: {},
+            where: { api_key },
             raw: true
         }).then(val => {
             if(val === null) return_message(req, res, HTTP_CODE.UNAUTHORIZED, RETURN_MESSAGES.NO_VALID_API_KEY);
