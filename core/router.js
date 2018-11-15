@@ -29,6 +29,8 @@ const RETURN_MESSAGES = {
     NOT_FOUND: 'Ressource not found.',
     INT_ERROR: 'Internal error.',
     TOO_LARGE: 'The file exceed the maximum size allowed.',
+    INVALID_DATE: 'Invalid date. Please use RFC2822 or ISO8601 format.',
+    DATE_EXPIRED: 'Date already expired. Please choose a date superior than now.',
     NO_VALID_API_KEY: 'A valid API key is needed to use this endpoint.',
     BLOCKED_ACCOUNT: 'Your account is currently blocked.',
     UPLOAD_EMPTY: 'The uploaded ressource is empty.',
@@ -81,9 +83,20 @@ function router(req, res) {
             // Store the file and respond to the client
             req.on('end', () => {
                 req.body = Buffer.concat(req.body);
-                var file_infos = fileType(req.body);
-                var filename = crypto.randomBytes(16).toString('hex');
+                var file_infos = fileType(req.body),
+                    filename = crypto.randomBytes(16).toString('hex'),
+                    file_expiration = req.headers['expires-at'];
 
+                // Check if the expiration date is set and if is valid
+                if(typeof file_expiration != 'undefined') {
+                    if((file_expiration = new Date(file_expiration)) == 'Invalid Date')
+                        return return_message(req, res, HTTP_CODE.BADREQUEST, RETURN_MESSAGES.INVALID_DATE);
+
+                    if(new Date() >= file_expiration)
+                        return return_message(req, res, HTTP_CODE.BADREQUEST, RETURN_MESSAGES.DATE_EXPIRED);
+                }
+
+                // Add file extension if is detected by fileType
                 if(file_infos != null) filename += '.' + file_infos.ext;
 
                 // Check if the file is empty
@@ -100,7 +113,8 @@ function router(req, res) {
                     // Store the filename and is owner in the database
                     db.models.files.create({
                         file: filename,
-                        owner: req.user.uuid
+                        owner: req.user.uuid,
+                        expireAt: file_expiration || null
                     })
                     .then(() => return_message(req, res, HTTP_CODE.OK, global.BASE_URL + 'files/' + filename))
                     .catch(dbErr => {
@@ -123,7 +137,7 @@ function router(req, res) {
                 expireAt: {
                     [db.Op.or]: {
                         [db.Op.eq]: null,
-                        [db.Op.lg]: new Date()
+                        [db.Op.gt]: new Date()
                     }
                 }
             },

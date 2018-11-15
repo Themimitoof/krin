@@ -7,9 +7,11 @@ It can be used by multiple users by creating new _API key_ for each person.
 You only need to have [Node.JS](https://nodejs.org/en/download/) installed on your machine.
 
 
-## Installation
+## Docker installation
 _WIP_
 
+## Manual installation
+_WIP_
 
 ## Usage
 ### Routes
@@ -23,6 +25,7 @@ Return: _Return the link to the file._
 #### `POST /files`
 Headers:
  * `X-Api-Key`: _user's api key_
+ * _(optionnal)_ `Expires-At`: expiration date of the ressource in _`RFC2822` or `ISO8601` format_.
 
 Return: _Return the list of user's files._
 
@@ -80,6 +83,13 @@ Return:
     "message": "http://<link_to_my_instance>/files/fkjldsjlkdsjklsdjflkdsjklsdjfs"
 }
 ```
+
+#### **Uploading a file with expiration date with cURL**
+```bash
+curl -X POST -H "X-Api-Key: <my_api_key>" -H "Expires-At: Mon, Dec 24 2018 23:59:59 GMT" -d @<file> http://<link_to_my_instance>/files
+```
+
+Return: `http://<link_to_my_instance>/files/enzjrkzenrezkjrnezjknrzjke`
 
 #### **Delete a file with cURL**
 ```bash
