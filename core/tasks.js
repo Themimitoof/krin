@@ -8,7 +8,8 @@
 // Import dependencies
 const schedule = require('node-schedule'),
       fs       = require('fs'),
-      db       = require('../db/models').sequelize;
+      db       = require('../db/models').sequelize,
+      crypto   = require('crypto');
 
 
 // Tasks
@@ -60,6 +61,53 @@ function clean_orphans() {
 
 
 /**
+ * Create new user
+ * @param {Callback} cb
+ */
+function create_apikey(cb) {
+    const api_key = crypto.randomBytes(64).toString('base64');
+     db.models.users.create({api_key}).then(data => cb(null, data.dataValues)).catch(err => cb(err, null));
+}
+
+
+/**
+ * Renew the API key of existing user
+ * @param {UUID} uuid 
+ * @returns generated API key
+ */
+function renew_apikey(uuid) {
+    const api_key = crypto.randomBytes(64).toString('base64');
+
+}
+
+/**
+ * Revoke the access to the servce to the specified used
+ * @param {*} uuid 
+ * @param {Boolean} status 
+ */
+function revoke_apikey(uuid, status) {
+
+}
+
+/**
+ * Give admin rights to specified user (for the future)
+ * @param {*} uuid 
+ * @param {Boolean} status
+ */
+function give_superpowers(uuid, status) {
+
+}
+
+
+/**
+ * Task callback
+ * @callback Callback
+ * @param {Object} error return an object of errors or null
+ * @param {Object} result return the result or null
+ */
+
+
+/**
  * Print in the console, the processing time of the task.
  * @param {String} task_name
  * @param {Number} timer 
@@ -75,6 +123,7 @@ schedule.scheduleJob('0 * * * *', () => clean_orphans());
 
 // Export tasks for manual commands
 module.exports = {
-    'clean_expired': clean_expired,
-    'clean_orphans': clean_orphans
+    clean_expired,
+    clean_orphans,
+    create_apikey
 }
