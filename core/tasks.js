@@ -65,37 +65,68 @@ function clean_orphans() {
  * @param {Callback} cb
  */
 function create_apikey(cb) {
-    const api_key = crypto.randomBytes(64).toString('base64');
-     db.models.users.create({api_key}).then(data => cb(null, data.dataValues)).catch(err => cb(err, null));
+    const api_key = crypto.randomBytes(32).toString('hex');
+    
+    db.models.users.create({api_key}).then(data => cb(null, data.dataValues)).catch(err => cb(err, null));
 }
 
 
 /**
  * Renew the API key of existing user
- * @param {UUID} uuid 
- * @returns generated API key
+ * @param {UUID} uuid user uuid
+ * @param {Callback} cb
  */
-function renew_apikey(uuid) {
-    const api_key = crypto.randomBytes(64).toString('base64');
+function renew_apikey(uuid, cb) {
+    const api_key = crypto.randomBytes(32).toString('hex');
 
+    db.models.users.findByPk(uuid).then(user => {
+        if(user == undefined)
+            return cb('Non existing user.', null);
+
+        // Change API Key
+        user.api_key = api_key;
+
+        // Save the instance
+        user.save({fields: ['api_key']}).then(res => cb(null, res.dataValues));
+    }).catch(err => cb(err, null));
 }
 
 /**
  * Revoke the access to the servce to the specified used
- * @param {*} uuid 
- * @param {Boolean} status 
+ * @param {*} uuid user uuid
+ * @param {Boolean} status desired status
+ * @param {Callback} cb 
  */
-function revoke_apikey(uuid, status) {
+function revoke_apikey(uuid, status, cb) {
+    db.models.users.findByPk(uuid).then(user => {
+        if(user == undefined)
+            return cb('Non existing user.', null);
 
+        // Change status
+        user.blocked = status;
+
+        // Save the instance
+        user.save({fields: ['blocked']}).then(res => cb(null, res.dataValues));
+    }).catch(err => cb(err, null));
 }
 
 /**
  * Give admin rights to specified user (for the future)
- * @param {*} uuid 
- * @param {Boolean} status
+ * @param {*} uuid user uuid
+ * @param {Boolean} status desired status
+ * @param {Callback} cb 
  */
-function give_superpowers(uuid, status) {
+function give_superpowers(uuid, status, cb) {
+    db.models.users.findByPk(uuid).then(user => {
+        if(user == undefined)
+            return cb('Non existing user.', null);
 
+        // Change status
+        user.admin = status;
+
+        // Save the instance
+        user.save({fields: ['admin']}).then(res => cb(null, res.dataValues));
+    }).catch(err => cb(err, null));
 }
 
 
@@ -125,5 +156,8 @@ schedule.scheduleJob('0 * * * *', () => clean_orphans());
 module.exports = {
     clean_expired,
     clean_orphans,
-    create_apikey
+    create_apikey,
+    renew_apikey,
+    revoke_apikey,
+    give_superpowers
 }
