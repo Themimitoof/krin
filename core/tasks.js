@@ -66,45 +66,42 @@ function clean_orphans() {
             return return_exectime(task, timer);
         }
 
-        console.log('Delete orphans files in database.');
-        for(i = 0; i <= data.length; i++) {
-            if(!fs.existsSync(__dirname + `/../files/${data[i].owner}.${data[i].file}`)) {
-                const file_uuid = data[i].uuid;
-
+        console.log('Delete orphans entries in database.');
+        for(i = 0; i < data.length; i++) {
+            var entry = data[i].dataValues;
+            if(!fs.existsSync(__dirname + `/../files/${entry.owner}.${entry.file}`)) {
                 data[i].destroy();
-                console.log(`${file_uuid} entry deleted.`);
+                console.log(`${entry.uuid} entry deleted.`);
             }
         }
 
         console.log('Delete orphans files in filesystem.');
-        fs.readdir(__dirname + '/../files/', (err, files) => {
-            if(err) {
-                console.log('An error is occured on opening the folder. Cause: \n' + err);
-                return return_exectime(task, timer);
-            }
+        const files = fs.readdirSync(__dirname + '/../files/');
 
-            for(i = 0; i <= files.length; i++) {
-                var file_found = false, x = 0;
+        for(i = 0; i < files.length; i++) {
+            var file_found = false;
+            
 
-                for(x = 0; x <= data.length; x++) {
-                    if(data[x].file == files[i]) {
-                        file_found = true;
-                        break;
-                    }
-                }
+            for(x = 0; x < data.length; x++) {
+                var entry = data[x].dataValues;
 
-                if(!file_found) {
-                    var filename = files[i];
-
-                    if(!fs.unlinkSync(__dirname + `/../files/${filename}`))
-                        console.log(`${filename} deleted.`);
-                    else
-                        console.warn(`Unable to delete ${filename}!`);
+                if(`${entry.owner}.${entry.file}` == files[i]) {
+                    file_found = true;
+                    continue;
                 }
             }
 
-            return return_exectime(task, timer);
-        });
+            if(!file_found) {
+                var filename = files[i];
+
+                if(!fs.unlinkSync(__dirname + `/../files/${filename}`))
+                    console.log(`${filename} deleted.`);
+                else
+                    console.warn(`Unable to delete ${filename}!`);
+            }
+        }
+
+        return return_exectime(task, timer);
     }).catch(err => {
         console.error('An error happened during the execution of the task. Cause:\n' + err);
         return return_exectime(task, timer);   
