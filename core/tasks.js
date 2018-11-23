@@ -51,6 +51,8 @@ function clean_expired() {
     });
 }
 
+clean_expired.params = [];
+
 
 /**
  * Remove all orphans files from database and filesystem.
@@ -110,6 +112,8 @@ function clean_orphans() {
     console.info(`${task} task started at ${new Date}`);
 }
 
+clean_orphans.params = [];
+
 
 /**
  * Create new user
@@ -121,6 +125,7 @@ function create_apikey(cb) {
     db.models.users.create({api_key}).then(data => cb(null, data.dataValues)).catch(err => cb(err, null));
 }
 
+create_apikey.params = [];
 
 /**
  * Renew the API key of existing user
@@ -142,6 +147,11 @@ function renew_apikey(uuid, cb) {
     }).catch(err => cb(err, null));
 }
 
+renew_apikey.params = [
+    { name: 'uuid', type: String, mandatory: true }
+];
+
+
 /**
  * Revoke the access to the servce to the specified used
  * @param {*} uuid user uuid
@@ -161,6 +171,12 @@ function revoke_apikey(uuid, status, cb) {
     }).catch(err => cb(err, null));
 }
 
+revoke_apikey.params = [
+    { name: 'uuid', type: String, mandatory: true },
+    { name: 'status', type: Boolean, mandatory: true }
+];
+
+
 /**
  * Give admin rights to specified user (for the future)
  * @param {*} uuid user uuid
@@ -179,6 +195,11 @@ function give_superpowers(uuid, status, cb) {
         user.save({fields: ['admin']}).then(res => cb(null, res.dataValues));
     }).catch(err => cb(err, null));
 }
+
+give_superpowers.params = [
+    { name: 'uuid', type: String, mandatory: true },
+    { name: 'status', type: Boolean, mandatory: true }
+];
 
 
 /**

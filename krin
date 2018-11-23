@@ -1,0 +1,92 @@
+#!/usr/bin/env node
+/**
+ * @name Krin CLI tool
+ * @description Share instantaneously files and pictures
+ * @author Michael Vieira
+ * @version 0.1.0
+ * @license MIT
+ */
+
+// Import tasks file
+const tasks = require('./core/tasks');
+
+// Retrieve arguments
+var args = process.argv,
+    index = args.indexOf(__filename) + 1;
+
+console.log(args);
+console.log(index);
+args = args.slice(index);
+console.log(args);
+
+
+
+// Store the list of available tasks
+var avTasks = [];
+for(var i = 0; i < Object.keys(tasks).length; i++) {
+    var taskName = Object.keys(tasks)[i];
+    
+    if(typeof tasks[taskName].params !== 'undefined') avTasks.push(taskName);
+}
+
+// Show MOTD with the version
+console.log('Krin CLI version: 0.1.0');
+
+// Manage generic commands
+switch(args[0]) {
+    case 'help':
+    case '-h': 
+        show_help();
+        break;
+
+    case 'tasks':
+    case '-t':
+        show_tasks();
+        break;
+
+    case (avTasks[avTasks.indexOf(args[0])]):
+        tasks[args[0]].params.length
+        
+        break;
+
+    default:
+        console.log(args[0]);
+        console.log("Enter 'krin help' to get the list of commands or 'krin tasks' to get the list of available tasks.");
+}
+
+process.exit(0);
+
+/**
+ * Generic functions
+ */
+function show_help() {
+    var help = `Available commands:
+\thelp, -h\t\tShow this page
+\ttasks, -t\t\tShow the list of available tasks
+\t<task_name> [params] \tRun specified task`;
+
+    console.log(help);
+}
+
+function show_tasks() {
+    var tasksInfos = 'Available tasks:\n';
+
+    for(var i = 0; i < avTasks.length; i++) {
+        var taskParams = tasks[avTasks[i]].params;
+
+        tasksInfos += `  - ${avTasks[i]}\n`;
+
+        if(taskParams.length > 0) {
+            tasksInfos += '    Parameters:\n';
+
+            for(var x = 0; x < taskParams.length; x++) {
+                if(taskParams[x].mandatory == true)
+                    tasksInfos += `\t(Mandatory) ${taskParams[x].name}: ${taskParams[x].type.name}\n`;
+                else
+                    tasksInfos += `\t(Optionnal) ${taskParams[x].name}: ${taskParams[x].type.name}\n`;
+            }
+        }
+    }
+
+    console.log(tasksInfos);
+}
