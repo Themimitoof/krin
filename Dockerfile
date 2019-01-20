@@ -14,6 +14,7 @@ RUN npm i
 
 RUN [ ! -f config/krin.json ] && cp config/krin.json.sample config/krin.json || :
 RUN [ ! -f config/database.json ] && cp config/database.json.sample config/database.json || :
+RUN [ ! -f db/krin.db ] && touch db/krin.db || :
 
 EXPOSE 8095
 CMD npm run prod
